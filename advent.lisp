@@ -1,6 +1,11 @@
 (defun str/head (a-string) (char a-string 0))
 
+(defun str/second (a-string) (char a-string 1))
+
 (defun str/rest (a-string) (subseq a-string 1 (length a-string)))
+
+;; FIXME: check that n is not greater than length
+(defun str/n-to-end (a-string n) (subseq a-string n (length a-string)))
 
 (defun open-paren-p (a-char) (char= a-char #\())
 
@@ -22,7 +27,8 @@
          (instructions->basement-pos (str/rest instructions) (- floor 1) (+ pos 1)))
         (t (instructions->basement-pos (str/rest instructions) floor (+ pos 1)))))
 
-(defun not-quite-lisp ()
+(defun solve-day01 ()
+  "Not quite Lisp"
   (let ((instructions (uiop:read-file-string "day01.txt")))
     (format t "2015 day 1 part 1: ~a~%" (instructions->floor instructions))
     (format t "2015 day 1 part 2: ~a~%" (instructions->basement-pos instructions))))
@@ -49,13 +55,18 @@
           (c (third sorted)))
       (+ (* 2 a) (* 2 b) (* a b c)))))
 
-(defun i-was-told-there-would-be-no-math ()
+(defun solve-day02 ()
+  "I was told there would be no math"
   (let ((lines (uiop:read-file-lines "day02.txt")))
     (let ((puzzle-input (mapcar 'parse-dimensions lines)))
       (let ((paper-feet (mapcar 'dims->paper puzzle-input))
             (ribbon-feet (mapcar 'dimensions->ribbon puzzle-input)))
         (format t "2015 day 2 part 1: ~a~%" (reduce '+ paper-feet))
         (format t "2015 day 2 part 2: ~a~%" (reduce #'+ ribbon-feet))))))
+
+(defun hash/set (hash key val)
+  (setf (gethash key hash) val)
+  hash)
 
 (defun 2dgrid/update-pos (pos step)
   (let ((x (aref pos 0))
@@ -66,10 +77,38 @@
           ((char= step #\v) (vector x (- y 1)))
           (t pos))))
 
-(defun 2dgrid/santa-pos (steps &optional (pos #(0 0)) (seen (make-hash-table :test equalp)))
+(defun 2dgrid/santa-pos
+    (steps
+     &optional
+       (pos #(0 0))
+       (seen (make-hash-table :test 'equalp)))
+  (hash/set seen pos t)
   (if (= (length steps) 0)
       (length (alexandria:hash-table-keys seen))
       (let ((new-pos (2dgrid/update-pos pos (str/head steps))))
-        (if (gethash new-pos seen)
-            (2dgrid/santa-pos (str/rest steps) new-pos seen)
-            (2dgrid/santa-pos (str/rest steps) new-pos (setf (gethash new-pos seen) t))))))
+        (2dgrid/santa-pos (str/rest steps) new-pos seen))))
+
+(defun 2dgrid/santa+robo-pos
+    (steps
+     &optional
+       (santa-pos #(0 0))
+       (robo-pos #(0 0))
+       (seen (make-hash-table :test 'equalp)))
+  (hash/set seen santa-pos t)
+  (hash/set seen robo-pos t)
+  (if (< (length steps) 2)
+      (length (alexandria:hash-table-keys seen))
+      (let* ((next-step (str/head steps))
+             (next-next-step (str/second steps))
+             (new-santa-pos (2dgrid/update-pos santa-pos next-step))
+             (new-robo-pos (2dgrid/update-pos robo-pos next-next-step))
+             (rest-steps (str/n-to-end steps 2)))
+        (2dgrid/santa+robo-pos rest-steps new-santa-pos new-robo-pos seen))))
+
+(defun solve-day03 ()
+  "Perfectly Spherical Houses in a Vacuum"
+  (let ((puzzle-input (uiop:read-file-string "day03.txt")))
+    (let ((unique-pos (2dgrid/santa-pos puzzle-input))
+          (stereo-pos (2dgrid/santa+robo-pos puzzle-input)))
+      (format t "2015 day 3 part 1: ~a~%" unique-pos)
+      (format t "2015 day 3 part 2: ~a~%" stereo-pos))))
