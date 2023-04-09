@@ -1,3 +1,4 @@
+;; requires alexandria and md5
 (defun str/head (a-string) (char a-string 0))
 
 (defun str/second (a-string) (char a-string 1))
@@ -112,3 +113,35 @@
           (stereo-pos (2dgrid/santa+robo-pos puzzle-input)))
       (format t "2015 day 3 part 1: ~a~%" unique-pos)
       (format t "2015 day 3 part 2: ~a~%" stereo-pos))))
+
+(defun md5-hex (string)
+  "Calculates the md5 sum of the string STRING and returns it as a hex string."
+  (with-output-to-string (s)
+    (loop for code across (md5:md5sum-string string)
+          do (format s "~2,'0x" code))))
+
+(defun five-zeroes-p (a-string)
+  (uiop:string-prefix-p "00000" a-string))
+
+(defun six-zeroes-p (a-string)
+  (uiop:string-prefix-p "000000" a-string))
+
+(defun find-lowest-five (key n)
+  (let ((hash (md5-hex (concatenate 'string key (write-to-string n)))))
+    (if (five-zeroes-p hash)
+        n
+        (find-lowest-five key (+ n 1)))))
+
+(defun find-lowest-six (key n)
+  (let ((hash (md5-hex (concatenate 'string key (write-to-string n)))))
+    (if (six-zeroes-p hash)
+        n
+        (find-lowest-six key (+ n 1)))))
+
+(defun solve-day-04 ()
+  "The Ideal Stocking Stuffer"
+  (let ((puzzle-input "ckczppom"))
+    (let ((lowest-n (find-lowest-five puzzle-input 1))
+          (lowest-m (find-lowest-six  puzzle-input 1)))
+      (format t "2015 day 4 part 1: ~a~%" lowest-n)
+      (format t "2015 day 4 part 2: ~a~%" lowest-m))))
