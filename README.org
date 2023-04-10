@@ -1,0 +1,12 @@
+#+TITLE: Advent of Lisp
+#+SUBTITLE: Solutions to Advent of Code puzzles in Common Lisp
+
+* Summary
+
+This repository contains solutions to [[https://adventofcode.com/][Advent of Code]] puzzles, written in Common Lisp. Specifically, the SBCL implementation of CL is used to check the results.
+
+This repository is not intended to compete in writing fast solutions during Advent of Code events, but rather to learn CL by using the puzzles as a motivation and the website as a way to check that the solutions work indeed. Also, I like to benchmark the solutions against solutions to the same puzzles written in other programming languages ...
+
+* License
+
+This software is purely educational, for my own learning. However, I have added also a BSD-2-clause license file to keep it under a clear, well-known license.
