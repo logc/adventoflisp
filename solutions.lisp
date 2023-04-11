@@ -1,4 +1,14 @@
-;; requires alexandria and md5
+(in-package :adventoflisp)
+
+(defun solve (year day)
+  (cond ((= year 2015) (solve-2015 day))))
+
+(defun solve-2015 (day)
+  (cond ((= day 1) (solve-day01))
+        ((= day 2) (solve-day02))
+        ((= day 3) (solve-day03))
+        ((= day 4) (solve-day04))))
+
 (defun str/head (a-string) (char a-string 0))
 
 (defun str/second (a-string) (char a-string 1))
@@ -138,7 +148,7 @@
         n
         (find-lowest-six key (+ n 1)))))
 
-(defun solve-day-04 ()
+(defun solve-day04 ()
   "The Ideal Stocking Stuffer"
   (let ((puzzle-input "ckczppom"))
     (let ((lowest-n (find-lowest-five puzzle-input 1))
