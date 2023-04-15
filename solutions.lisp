@@ -7,13 +7,16 @@
   (cond ((= day 1) (solve-day01))
         ((= day 2) (solve-day02))
         ((= day 3) (solve-day03))
-        ((= day 4) (solve-day04))))
+        ((= day 4) (solve-day04))
+        ((= day 5) (solve-day05))))
 
 (defun str/head (a-string) (char a-string 0))
 
 (defun str/second (a-string) (char a-string 1))
 
 (defun str/rest (a-string) (subseq a-string 1 (length a-string)))
+
+(defun str/empty-p (a-string) (= (length a-string) 0))
 
 ;; FIXME: check that n is not greater than length
 (defun str/n-to-end (a-string n) (subseq a-string n (length a-string)))
@@ -155,3 +158,54 @@
           (lowest-m (find-lowest-six  puzzle-input 1)))
       (format t "2015 day 4 part 1: ~a~%" lowest-n)
       (format t "2015 day 4 part 2: ~a~%" lowest-m))))
+
+(defun count-char (a-char a-string)
+  (count a-char a-string :test #'equal))
+
+(defun count-vowels (a-string)
+  (+ (count-char #\a a-string)
+     (count-char #\e a-string)
+     (count-char #\i a-string)
+     (count-char #\o a-string)
+     (count-char #\u a-string)))
+
+(defun contains-three-vowels-p (a-string)
+  (>= (count-vowels a-string) 3))
+
+(defun contains-repeated-p (a-string)
+  (cond ((< (length a-string) 2) nil)
+        ((char= (str/head a-string) (str/second a-string)) t)
+        (t (contains-repeated-p (str/rest a-string)))))
+
+(defun not-contains-forbidden-p (a-string)
+  (not (or (search "ab" a-string)
+           (search "cd" a-string)
+           (search "pq" a-string)
+           (search "xy" a-string))))
+
+(defun is-nice-p (a-string)
+  (and (contains-three-vowels-p a-string)
+       (contains-repeated-p a-string)
+       (not-contains-forbidden-p a-string)))
+
+(defun count-nice (strings &optional (cnt 0))
+  (cond ((= (length strings) 0) cnt)
+        ((is-nice-p (first strings)) (count-nice (rest strings) (+ cnt 1)))
+        (t (count-nice (rest strings) cnt))))
+
+(defun str->pairs (a-string &optional (acc nil))
+  (cond ((str/empty-p a-string) acc)
+        ((< (length a-string) 2) acc)
+        (t (let* ((a (str/head a-string))
+                  (b (str/second a-string))
+                  (p (cons a b)))
+             (str->pairs (str/rest a-string) (cons p acc))))))
+
+(defun char-pair-equal (char-pair-a char-pair-b)
+  (and (char= (first char-pair-a) (first char-pair-b))
+       (char= (second char-pair-a) (second char-pair-b))))
+
+(defun solve-day05 ()
+  "Doesn't He Have Intern-Elves For This?"
+  (let ((puzzle-input (uiop:read-file-lines "day05.txt")))
+    (format t "2015 day 5 part 1: ~a~%" (count-nice puzzle-input))))
