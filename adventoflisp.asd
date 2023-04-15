@@ -4,4 +4,5 @@
   :author "Luis Osa <luis.osa.gdc@gmail.com>"
   :depends-on (#:alexandria #:md5)
   :components ((:file "package")
-               (:file "solutions")))
+               (:file "solutions")
+               (:file "helpers")))
