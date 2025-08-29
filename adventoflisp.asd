@@ -14,6 +14,7 @@
   :depends-on (#:adventoflisp #:fiveam)
   :components ((:module "tests"
 		:components ((:file "package")
-			     (:file "solutions-test"))))
+			     (:file "solutions-test")
+			     (:file "helpers-test"))))
   :perform (test-op (o c)
 		    (uiop:symbol-call :fiveam :run-all-tests)))

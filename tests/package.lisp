@@ -15,3 +15,5 @@
 (def-suite ideal-stocking-stuffer)
 
 (def-suite intern-elves)
+
+(def-suite helpers-test)

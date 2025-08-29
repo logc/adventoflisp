@@ -151,6 +151,28 @@
         ((is-nice-p (first strings)) (count-nice (rest strings) (+ cnt 1)))
         (t (count-nice (rest strings) cnt))))
 
+(defun contains-pair-twice-p (a-string)
+  (let ((seen (make-hash-table :test #'equal)))
+    (loop for i from 0 below (1- (length a-string))
+	  for bigram = (subseq a-string i (+ i 2))
+	  do (if (and (gethash bigram seen)
+		      ;; prevent overlapping bigrams from returning true
+		      (< (gethash bigram seen) (1- i)))
+		 (return t)
+		 (setf (gethash bigram seen) i)))))
+
+(defun contains-repeated-inbetween-p (a-string)
+  (loop for i from 0 below (- (length a-string) 2)
+	for trigram = (subseq a-string i (+ i 3))
+	when (char= (aref trigram 0) (aref trigram 2))
+	do (return t)
+	finally (return nil)))
+
+(defun count-nice-again (strings)
+  (loop for s in strings
+	count (and (contains-pair-twice-p s)
+		   (contains-repeated-inbetween-p s))))
+
 (defun str->pairs (a-string &optional (acc nil))
   (cond ((str/empty-p a-string) acc)
         ((< (length a-string) 2) acc)

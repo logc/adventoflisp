@@ -55,3 +55,8 @@
   (is (= 0 (aoc::count-nice '("haegwjzuvuyypxyu"))))
   (is (= 0 (aoc::count-nice '("dvszwmarrgswjxmb")))))
 
+(test count-nice-again
+  (is (= 1 (aoc::count-nice-again '("qjhvhtzxzqqjkmpb"))))
+  (is (= 1 (aoc::count-nice-again '("xxyxx"))))
+  (is (= 0 (aoc::count-nice-again '("uurcxstgmygtbstg"))))
+  (is (= 0 (aoc::count-nice-again '("ieodomkazucvgmuy")))))

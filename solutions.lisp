@@ -28,7 +28,7 @@
             (ribbon-feet (mapcar 'dimensions->ribbon puzzle-input)))
         (format-solutions 2015 2
                           (reduce '+ paper-feet)
-                          (reduce #'+ ribbon-feet))))))
+                          (reduce '+ ribbon-feet))))))
 
 (defun solve-day03 ()
   "Perfectly Spherical Houses in a Vacuum"
@@ -47,4 +47,6 @@
 (defun solve-day05 ()
   "Doesn't He Have Intern-Elves For This?"
   (let ((puzzle-input (uiop:read-file-lines "day05.txt")))
-    (format t "2015 day 5 part 1: ~a~%" (count-nice puzzle-input))))
+    (format-solutions 2015 2
+		      (count-nice puzzle-input)
+		      (count-nice-again puzzle-input))))
