@@ -184,3 +184,205 @@
 (defun char-pair-equal (char-pair-a char-pair-b)
   (and (char= (first char-pair-a) (first char-pair-b))
        (char= (second char-pair-a) (second char-pair-b))))
+
+
+;; BEGIN: Grid class & public methods to manipulate it
+(defclass grid ()
+  ((m :initarg :num-rows
+      :reader grid-nrows
+      :documentation "Number of rows of the grid")
+   (n :initarg :num-cols
+      :reader grid-ncols
+      :documentation "Number of columns of the grid")
+   (elems :documentation "Private bit-vector of length m * n")))
+
+(defmethod shared-initialize :after ((g grid) slots &key)
+  (declare (ignore slots))
+  (with-slots (m n elems) g
+    (setf elems (make-array (* m n)
+		      :element-type 'bit
+		      :initial-element 0))))
+
+(defun make-grid (m n)
+  (make-instance 'grid :num-rows m :num-cols n))
+
+(defun grid-index (g row col)
+  "Compute linear index for (row, col). 0-based."
+  (declare (type fixnum row col))
+  (let ((n (grid-nrows g)))
+    (+ col (* row n))))
+
+(defun grid-ref (g row col)
+  "Return element at position row, col"
+  (with-slots (elems) g
+    (aref elems (grid-index g row col))))
+
+
+(defun (setf grid-ref) (value g row col)
+  "Set grid element to 0 or 1."
+  (with-slots (elems) g
+    (setf (aref elems (grid-index g row col))
+          (if (eql value 0) 0 1))))
+
+(defun grid-turn-on (g row col)
+  (setf (grid-ref g row col) 1))
+
+(defun grid-turn-off (g row col)
+  (setf (grid-ref g row col) 0))
+
+(defun grid-toggle (g row col)
+  (setf (grid-ref g row col)
+        (if (eql (grid-ref g row col) 0) 1 0)))
+
+(defun grid-count-on (g)
+  (with-slots (elems) g
+    (count 1 elems)))
+
+(defun turn-on-range (g row-start col-start row-end col-end)
+  "set all bits in the inclusive rectangle to 1."
+  (loop for r from row-start to row-end
+        do (loop for c from col-start to col-end
+                 do (grid-turn-on g r c))))
+
+(defun turn-off-range (g row-start col-start row-end col-end)
+  "Set all bits in the inclusive rectangle to 0."
+  (loop for r from row-start to row-end
+        do (loop for c from col-start to col-end
+                 do (grid-turn-off g r c))))
+
+(defun toggle-range (g row-start col-start row-end col-end)
+  "Toggle bits in the inclusive rectangle."
+  (loop for r from row-start to row-end
+	do (loop for c from col-start to col-end
+		 do (grid-toggle g r c))))
+;; END: Grid class & public methods to manipulate it
+
+(defstruct point x y)
+(defstruct instruction op start end)
+
+(defun parse-instruction (line)
+  (multiple-value-bind (whole groups)
+      (cl-ppcre:scan-to-strings
+       "^(turn on|turn off|toggle) (\\d+),(\\d+) through (\\d+),(\\d+)$"
+       line)
+    (declare (ignore whole))
+    (let ((op-str (aref groups 0)))
+      (make-instruction
+       :op (cond ((string= op-str "turn on")  :turn-on)
+                 ((string= op-str "turn off") :turn-off)
+                 ((string= op-str "toggle")   :toggle))
+       :start (make-point :x (parse-integer (aref groups 1))
+                          :y (parse-integer (aref groups 2)))
+       :end   (make-point :x (parse-integer (aref groups 3))
+                          :y (parse-integer (aref groups 4)))))))
+
+
+(defun apply-instruction-grid (instruction grid)
+  (cond ((eql :turn-on (instruction-op instruction))
+	 (turn-on-range grid
+			(point-x (instruction-start instruction))
+			(point-y (instruction-start instruction))
+			(point-x (instruction-end instruction))
+			(point-y (instruction-end instruction))))
+	((eql :turn-off (instruction-op instruction))
+	 (turn-off-range grid
+			 (point-x (instruction-start instruction))
+			 (point-y (instruction-start instruction))
+			 (point-x (instruction-end instruction))
+			 (point-y (instruction-end instruction))))
+	((eql :toggle (instruction-op instruction))
+	 (toggle-range grid
+		       (point-x (instruction-start instruction))
+		       (point-y (instruction-start instruction))
+		       (point-x (instruction-end instruction))
+		       (point-y (instruction-end instruction))))))
+
+
+;; BEGIN: Brightness grid class & public API
+(defclass bright-grid ()
+  ((m :initarg :num-rows
+      :reader bright-grid-nrows
+      :documentation "Number of rows of the bright grid")
+   (n :initarg :num-cols
+      :reader bright-grid-ncols
+      :documentation "Number of columns of the bright grid")
+   (elems :documentation "Private vector of integers of length m * n")))
+
+(defmethod shared-initialize :after ((g bright-grid) slots &key)
+  (declare (ignore slots))
+  (with-slots (m n elems) g
+    (setf elems (make-array (* m n)
+			    :element-type 'integer
+			    :initial-element 0))))
+
+(defun make-bright-grid (m n)
+  (make-instance 'bright-grid :num-rows m :num-cols n))
+
+(defun bright-grid-index (g row col)
+  "Compute linear index for (row, col). 0-based."
+  (declare (type fixnum row col))
+  (let ((n (bright-grid-nrows g)))
+    (+ col (* row n))))
+
+(defun bright-grid-ref (g row col)
+  (with-slots (elems) g
+    (aref elems (bright-grid-index g row col))))
+
+
+(defun (setf bright-grid-ref) (value g row col)
+  "Set bright grid element to value."
+  (with-slots (elems) g
+    (setf (aref elems (bright-grid-index g row col)) value)))
+
+(defun bright-grid-turn-on (g row col)
+  (let ((current (bright-grid-ref g row col)))
+    (setf (bright-grid-ref g row col) (1+ current))))
+
+(defun bright-grid-turn-off (g row col)
+  (let ((current (bright-grid-ref g row col)))
+    (setf (bright-grid-ref g row col)
+	  (max 0 (1- current)))))
+
+(defun bright-grid-toggle (g row col)
+  (let ((current (bright-grid-ref g row col)))
+    (setf (bright-grid-ref g row col) (+ current 2))))
+
+(defun bright-grid-count (g)
+  (with-slots (elems) g
+    (reduce #'+ elems)))
+
+(defun bright-turn-on-range (g row-start col-start row-end col-end)
+  (loop for r from row-start to row-end
+        do (loop for c from col-start to col-end
+                 do (bright-grid-turn-on g r c))))
+
+(defun bright-turn-off-range (g row-start col-start row-end col-end)
+  (loop for r from row-start to row-end
+        do (loop for c from col-start to col-end
+                 do (bright-grid-turn-off g r c))))
+
+(defun bright-toggle-range (g row-start col-start row-end col-end)
+  (loop for r from row-start to row-end
+	do (loop for c from col-start to col-end
+		 do (bright-grid-toggle g r c))))
+;; END: Bright grid class & public API
+
+(defun apply-instruction-bright-grid (instruction grid)
+  (cond ((eql :turn-on (instruction-op instruction))
+	 (bright-turn-on-range grid
+			(point-x (instruction-start instruction))
+			(point-y (instruction-start instruction))
+			(point-x (instruction-end instruction))
+			(point-y (instruction-end instruction))))
+	((eql :turn-off (instruction-op instruction))
+	 (bright-turn-off-range grid
+			 (point-x (instruction-start instruction))
+			 (point-y (instruction-start instruction))
+			 (point-x (instruction-end instruction))
+			 (point-y (instruction-end instruction))))
+	((eql :toggle (instruction-op instruction))
+	 (bright-toggle-range grid
+		       (point-x (instruction-start instruction))
+		       (point-y (instruction-start instruction))
+		       (point-x (instruction-end instruction))
+		       (point-y (instruction-end instruction))))))

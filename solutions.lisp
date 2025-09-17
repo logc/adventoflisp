@@ -6,7 +6,8 @@
                ((= day 2) (solve-day02))
                ((= day 3) (solve-day03))
                ((= day 4) (solve-day04))
-               ((= day 5) (solve-day05))))))
+               ((= day 5) (solve-day05))
+	       ((= day 6) (solve-day06))))))
 
 (defun format-solutions (year day sol1 sol2)
   (format t
@@ -50,3 +51,16 @@
     (format-solutions 2015 2
 		      (count-nice puzzle-input)
 		      (count-nice-again puzzle-input))))
+
+(defun solve-day06 ()
+  "Probably a Fire Hazard"
+  (let ((puzzle-input (uiop:read-file-lines "day06.txt"))
+	(grid (make-grid 1000 1000))
+	(bright-grid (make-bright-grid 1000 1000)))
+    (loop for line in puzzle-input
+	  do (let ((i (parse-instruction line)))
+	       (apply-instruction-grid i grid)
+	       (apply-instruction-bright-grid i bright-grid)))
+    (format-solutions 2015 6
+		      (grid-count-on grid)
+		      (bright-grid-count bright-grid))))

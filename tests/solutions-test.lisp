@@ -60,3 +60,21 @@
   (is (= 1 (aoc::count-nice-again '("xxyxx"))))
   (is (= 0 (aoc::count-nice-again '("uurcxstgmygtbstg"))))
   (is (= 0 (aoc::count-nice-again '("ieodomkazucvgmuy")))))
+
+(in-suite probably-fire-hazard)
+
+(test how-many-lights-lit
+  (let ((g (aoc::make-grid 1000 1000))
+	(i (aoc::parse-instruction "turn on 0,0 through 999,999")))
+    (aoc::apply-instruction-grid i g)
+    (is (= (* 1000 1000) (aoc::grid-count-on g))))
+  (let ((g (aoc::make-grid 1000 1000))
+	(i (aoc::parse-instruction "toggle 0,0 through 999,0")))
+    (aoc::apply-instruction-grid i g)
+    (is (= 1000 (aoc::grid-count-on g))))
+  (let ((g (aoc::make-grid 1000 1000))
+	(i1 (aoc::parse-instruction "turn on 0,0 through 999,999"))
+	(i2 (aoc::parse-instruction "turn off 499,499 through 500,500")))
+    (aoc::apply-instruction-grid i1 g)
+    (aoc::apply-instruction-grid i2 g)
+    (is (= (- (* 1000 1000) 4)) (aoc::grid-count-on g))))

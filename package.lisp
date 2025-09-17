@@ -1,4 +1,4 @@
 (defpackage :adventoflisp
   (:nicknames :aoc)
-  (:use :cl)
+  (:use :cl :cl-ppcre)
   (:export #:solve))

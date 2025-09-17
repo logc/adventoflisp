@@ -16,4 +16,6 @@
 
 (def-suite intern-elves)
 
+(def-suite probably-fire-hazard)
+
 (def-suite helpers-test)
