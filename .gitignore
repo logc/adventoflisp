@@ -17,3 +17,5 @@
 *.wx64fsl
 *.wx32fsl
 
+# Puzzle inputs
+*.txt
